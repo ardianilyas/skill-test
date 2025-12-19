@@ -11,7 +11,7 @@ class UpdatePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('update', $this->post);
     }
 
     /**
@@ -25,7 +25,7 @@ class UpdatePostRequest extends FormRequest
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|string',
             'is_draft' => 'sometimes|boolean',
-            'published_at' => 'nullable|date',
+            'published_at' => 'nullable|date|after_or_equal:now',
         ];
     }
 }
