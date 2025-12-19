@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreatePostRequest;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
+use App\Http\Resources\PostCollection;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
-use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
-
-use function Symfony\Component\Clock\now;
 
 class PostController extends Controller
 {
@@ -18,7 +19,7 @@ class PostController extends Controller
     {
         $posts = Post::query()->active()->with('user')->latest('published_at')->paginate(20);
 
-        return response()->json($posts);
+        return response()->json(new PostCollection($posts));
     }
 
     /**
@@ -32,11 +33,11 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreatePostRequest $request)
+    public function store(StorePostRequest $request)
     {
         $post = $request->user()->posts()->create($request->all());
 
-        return response()->json($post, 201);
+        return response()->json(new PostResource($post->load('user')), Response::HTTP_CREATED);
     }
 
     /**
@@ -44,11 +45,11 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        if (! $post->is_draft && $post->published_at && $post->published_at <= now()) {
-            return response()->json($post->load('user'));
+        if ($post->is_draft || ($post->published_at && $post->published_at->isFuture())) {
+            abort(404);
         }
 
-        return response()->json(['message' => 'Post not found'], 404);
+        return response()->json(new PostResource($post->load('user')));
     }
 
     /**
@@ -62,13 +63,13 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Post $post)
+    public function update(UpdatePostRequest $request, Post $post)
     {
         Gate::authorize('update', $post);
 
         $post->update($request->all());
 
-        return response()->json($post);
+        return response()->json(new PostResource($post->load('user')), Response::HTTP_OK);
     }
 
     /**
@@ -80,6 +81,6 @@ class PostController extends Controller
 
         $post->delete();
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }
