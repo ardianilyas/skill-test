@@ -22,7 +22,7 @@ class Post extends Model
 
     protected $casts = [
         'is_draft' => 'boolean',
-        'pusbliedh_at' => 'datetime',
+        'published_at' => 'datetime:Y-m-d H:i:s',
     ];
 
     public function user(): BelongsTo
@@ -33,6 +33,6 @@ class Post extends Model
     #[Scope]
     public function active(Builder $query): void
     {
-        $query->where('is_draft', false)->whereNotNull('published_at')->where('published_at', '<=', now());
+        $query->where('is_draft', false)->where('published_at', '<=', now());
     }
 }
