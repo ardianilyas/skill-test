@@ -35,4 +35,11 @@ class Post extends Model
     {
         $query->where('is_draft', false)->where('published_at', '<=', now());
     }
+
+    public function isActive(): bool
+    {
+        return ! $this->is_draft
+            && $this->published_at !== null
+            && ! $this->published_at->isFuture();
+    }
 }

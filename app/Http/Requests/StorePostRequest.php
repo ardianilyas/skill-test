@@ -25,7 +25,7 @@ class StorePostRequest extends FormRequest
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'is_draft' => 'boolean',
-            'published_at' => 'nullable|date|after_or_equal:now',
+            'published_at' => 'nullable|date|required_if:is_draft,false|after_or_equal:now',
         ];
     }
 }

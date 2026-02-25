@@ -35,7 +35,7 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-        $post = $request->user()->posts()->create($request->all());
+        $post = $request->user()->posts()->create($request->validated());
 
         return response()->json(new PostResource($post->load('user')), Response::HTTP_CREATED);
     }
@@ -45,7 +45,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        if ($post->is_draft || ($post->published_at && $post->published_at->isFuture())) {
+        if (! $post->isActive()) {
             abort(404);
         }
 
@@ -67,7 +67,7 @@ class PostController extends Controller
     {
         Gate::authorize('update', $post);
 
-        $post->update($request->all());
+        $post->update($request->validated());
 
         return response()->json(new PostResource($post->load('user')), Response::HTTP_OK);
     }
