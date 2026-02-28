@@ -14,10 +14,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::resource('posts', PostController::class)->only(['index', 'create', 'show']);
 Route::resource('posts', PostController::class)
-    ->only(['store', 'edit', 'update', 'destroy'])
-    ->middleware('auth');
+    ->middlewareFor(['store', 'update', 'destroy'], 'auth');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
